@@ -5,6 +5,10 @@ template <typename T>
 class Stack
 {
 private:
+    int* data;
+    int size;
+    int allocatedMemory;
+    int memoryAllocateSize = 10;
 
 public:
     Stack();
@@ -12,49 +16,86 @@ public:
     void push(T val);
     T pop();
     T top();
-    int size();
+    int getSize();
     bool isEmpty();
 };
 
 template <typename T>
 Stack<T>::Stack()
 {
+    data = new int[memoryAllocateSize];
+    allocatedMemory = memoryAllocateSize;
+    size = 0;
     println("Constructor called");
 }
 
 template <typename T>
 Stack<T>::~Stack()
 {
+    delete [] data;
     println("Destructor called");
 }
 
 template <typename T>
 void Stack<T>::push(T val)
 {
+    if(size >= allocatedMemory)
+    {
+        allocatedMemory += memoryAllocateSize;
+        int* newData = new int[allocatedMemory];
+        for(int i = 0; i < size; i++)
+        {
+            newData[i] = data[i];
+        }
+        delete [] data;
+        data = newData;
+    }
 
+    data[size] = val;
+    size++;
 }
 
 template <typename T>
 T Stack<T>::pop()
 {
-    return T{};
+    if(size <= allocatedMemory - memoryAllocateSize)
+    {
+        allocatedMemory -= memoryAllocateSize;
+        int* newData = new int[allocatedMemory];
+        for(int i = 0; i < size; i++)
+        {
+            newData[i] = data[i];
+        }
+        delete [] data;
+        data = newData;
+    }
+
+    T val = data[size - 1];
+    data[size - 1] = T{};
+    size--;
+    return val;
 }
 
 template <typename T>
 T Stack<T>::top()
 {
-    return T{};
+    T val = data[size - 1];
+    return val;
 }
 
 template <typename T>
-int Stack<T>::size()
+int Stack<T>::getSize()
 {
-    return -1;
+    return size;
 }
 
 template <typename T>
 bool Stack<T>::isEmpty()
 {
+    if(size == 0)
+    {
+        return true;
+    }
     return false;
 }
 
@@ -67,7 +108,7 @@ TEST(TestStack, EmptyStackIsEmpty)
 TEST(TestStack, EmptyStackSizeZero)
 {
     Stack<int> s;
-    ASSERT_EQ(s.size(), 0);
+    ASSERT_EQ(s.getSize(), 0);
 }
 
 TEST(TestStack, NonEmptyStackNotEmpty)
@@ -81,7 +122,7 @@ TEST(TestStack, Push1GivesSize1)
 {
     Stack<int> s;
     s.push(1);
-    ASSERT_EQ(s.size(),1);
+    ASSERT_EQ(s.getSize(),1);
 }
 
 TEST(TestStack, PushAndTopGivesCorrectValue)
@@ -101,7 +142,7 @@ TEST(TestStack, PushAndPopGivesCorrectSize)
     s.push(1);
     s.push(2);
     s.pop();
-    ASSERT_EQ(s.size(), 1);
+    ASSERT_EQ(s.getSize(), 1);
 }
 
 TEST(TestStack, PushAndPopGivesCorrectValue)
@@ -113,14 +154,28 @@ TEST(TestStack, PushAndPopGivesCorrectValue)
     ASSERT_EQ(s.top(), 1);
 }
 
-TEST(TestStack, Push1000)
+TEST(TestStack, Push1000GivesCorrectSize)
 {
     Stack<int> s;
     for(int i = 0; i < 1000; i++)
     {
         s.push(i);
     }
-    ASSERT_EQ(s.size(), 1000);
+    ASSERT_EQ(s.getSize(), 1000);
+}
+
+TEST(TestStack, Push1000Pop500GivesCorrectValue)
+{
+    Stack<int> s;
+    for(int i = 0; i < 1000; i++)
+    {
+        s.push(i);
+    }
+    for(int i = 0; i < 500; i++)
+    {
+        s.pop();
+    }
+    ASSERT_EQ(s.top(), 499);
 }
 
 int main()
