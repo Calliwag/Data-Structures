@@ -5,7 +5,7 @@ template <typename T>
 class Stack
 {
 private:
-    int* data;
+    T* data;
     int size;
     int allocatedMemory;
     int memoryAllocateSize = 10;
@@ -23,7 +23,7 @@ public:
 template <typename T>
 Stack<T>::Stack()
 {
-    data = new int[memoryAllocateSize];
+    data = new T[memoryAllocateSize];
     allocatedMemory = memoryAllocateSize;
     size = 0;
     println("Constructor called");
@@ -42,7 +42,7 @@ void Stack<T>::push(T val)
     if(size >= allocatedMemory)
     {
         allocatedMemory += memoryAllocateSize;
-        int* newData = new int[allocatedMemory];
+        T* newData = new T[allocatedMemory];
         for(int i = 0; i < size; i++)
         {
             newData[i] = data[i];
@@ -61,7 +61,7 @@ T Stack<T>::pop()
     if(size <= allocatedMemory - memoryAllocateSize)
     {
         allocatedMemory -= memoryAllocateSize;
-        int* newData = new int[allocatedMemory];
+        T* newData = new T[allocatedMemory];
         for(int i = 0; i < size; i++)
         {
             newData[i] = data[i];
@@ -176,6 +176,20 @@ TEST(TestStack, Push1000Pop500GivesCorrectValue)
         s.pop();
     }
     ASSERT_EQ(s.top(), 499);
+}
+
+TEST(TestStack, Push1000Pop500GivesCorrectString)
+{
+    Stack<string> s;
+    for(int i = 0; i < 1000; i++)
+    {
+        s.push(to_string(i));
+    }
+    for(int i = 0; i < 500; i++)
+    {
+        s.pop();
+    }
+    ASSERT_EQ(s.top(), "499");
 }
 
 int main()
