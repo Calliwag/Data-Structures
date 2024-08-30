@@ -104,6 +104,25 @@ TEST(TestStack, PushAndPopGivesCorrectSize)
     ASSERT_EQ(s.size(), 1);
 }
 
+TEST(TestStack, PushAndPopGivesCorrectValue)
+{
+    Stack<int> s;
+    s.push(1);
+    s.push(2);
+    s.pop();
+    ASSERT_EQ(s.top(), 1);
+}
+
+TEST(TestStack, Push1000)
+{
+    Stack<int> s;
+    for(int i = 0; i < 1000; i++)
+    {
+        s.push(i);
+    }
+    ASSERT_EQ(s.size(), 1000);
+}
+
 int main()
 {
     ::testing::InitGoogleTest();
