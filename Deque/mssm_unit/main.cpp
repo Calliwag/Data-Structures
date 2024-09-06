@@ -7,8 +7,8 @@ class Deque
 private:
     T* array;
     int arraySize;
-    int front;
-    int back;
+    int frontIndex;
+    int backIndex;
 
 public:
     Deque();
@@ -24,77 +24,107 @@ public:
 };
 
 template <typename T>
-Deque::Deque()
+Deque<T>::Deque()
 {
-
+    arraySize = 10;
+    array = new T[10];
+    frontIndex = 0;
+    backIndex = 1;
 }
 
 template <typename T>
-Deque::~Deque()
+Deque<T>::~Deque()
 {
-
+    delete [] array;
 }
 
 template <typename T>
-void Deque::PushFront(T val)
+void Deque<T>::pushFront(T val)
 {
-    if(front % arraySize == (back + 1) % arraySize)
+    if(frontIndex % arraySize == (backIndex + 1) % arraySize)
     {
-        T* newArray = T[arraySize * 2];
+        T* newArray = new T[arraySize * 2];
         for(int i = 0; i < arraySize; i++)
         {
-            newArray[i] = array[(front + i) % arraySize];
+            newArray[i] = array[(frontIndex + i) % arraySize];
         }
         delete [] array;
         array = newArray;
-        front = 0;
-        back = arraySize - 1;
+        frontIndex = 0;
+        backIndex = arraySize - 1;
         arraySize *= 2;
     }
-    array[back + 1] = val;
-    back = (back + 1) % arraySize;
+    array[frontIndex] = val;
+    frontIndex = (frontIndex - 1 + arraySize) % arraySize;
 }
 
 template <typename T>
-void Deque::PushBack(T val)
+void Deque<T>::pushBack(T val)
 {
-
+    if(frontIndex % arraySize == (backIndex + 1) % arraySize)
+    {
+        T* newArray = new T[arraySize * 2];
+        for(int i = 0; i < arraySize; i++)
+        {
+            newArray[i] = array[(frontIndex + i + 1) % arraySize];
+        }
+        delete [] array;
+        array = newArray;
+        frontIndex = 0;
+        backIndex = arraySize - 1;
+        arraySize *= 2;
+    }
+    array[backIndex] = val;
+    backIndex = (backIndex + 1 + arraySize) % arraySize;
 }
 
 template <typename T>
-T popFront()
+T Deque<T>::popFront()
 {
-
+    T val = array[frontIndex];
+    array[frontIndex] = T{};
+    frontIndex = (frontIndex + 1 + arraySize) % arraySize;
+    return val;
 }
 
 template <typename T>
-T popBack()
+T Deque<T>::popBack()
 {
-
+    T val = array[backIndex];
+    array[backIndex] = T{};
+    frontIndex = (frontIndex - 1 + arraySize) % arraySize;
+    return val;
 }
 
 template <typename T>
-T front()
+T Deque<T>::front()
 {
-
+    return array[frontIndex + 1];
 }
 
 template <typename T>
-T back()
+T Deque<T>::back()
 {
-
+    return array[backIndex - 1 + arraySize];
 }
 
 template <typename T>
-int getSize()
+int Deque<T>::getSize()
 {
-
+    return (backIndex - frontIndex + arraySize) % arraySize;
 }
 
 template <typename T>
-bool isEmpty()
+bool Deque<T>::isEmpty()
 {
-
+    if(frontIndex == backIndex)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 TEST(TestDeque, EmptyStackIsEmpty)
@@ -123,7 +153,7 @@ TEST(TestDeque, Push1GivesSize1)
     ASSERT_EQ(s.getSize(),1);
 }
 
-TEST(TestDeque, PushAndFrontBackGivesCorrectValue)
+TEST(TestDeque, PushFrontBackGivesCorrectValue)
 {
     Deque<int> s;
     s.pushBack(1);
@@ -149,7 +179,7 @@ TEST(TestDeque, PushAndPopGivesCorrectValue)
     s.pushFront(1);
     s.pushBack(2);
     s.popFront();
-    ASSERT_EQ(s.top(), 2);
+    ASSERT_EQ(s.front(), 2);
 }
 
 TEST(TestDeque, Push1000GivesCorrectSize)
@@ -173,7 +203,7 @@ TEST(TestDeque, Push1000Pop500GivesCorrectValue)
     {
         s.popBack();
     }
-    ASSERT_EQ(s.top(), 500);
+    ASSERT_EQ(s.back(), 500);
 }
 
 TEST(TestDeque, Push1000Pop500GivesCorrectString)
@@ -187,7 +217,7 @@ TEST(TestDeque, Push1000Pop500GivesCorrectString)
     {
         s.popBack();
     }
-    ASSERT_EQ(s.top(), "500");
+    ASSERT_EQ(s.back(), "500");
 }
 
 int main()
