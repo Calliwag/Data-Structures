@@ -2,6 +2,9 @@
 #include "gtest/gtest.h"
 
 template <typename T>
+class BSTree;
+
+template <typename T>
 class Node
 {
 private:
@@ -16,14 +19,13 @@ public:
     ~Node();
     T getValue();
     void insert(T value);
-    void rootRemove(T value);
-    void remove(T value, Node<T>*& parent);
+    void rootRemove(T value, BSTree<T>* tree);
+    void remove(T value, Node<T>* parent);
     bool includes(T value);
     vector<T> inOrder();
     vector<T> preOrder();
     vector<T> postOrder();
     int size();
-
 };
 
 template <typename T>
@@ -84,7 +86,7 @@ T Node<T>::getRightMost()
 }
 
 template <typename T>
-void Node<T>::rootRemove(T value)
+void Node<T>::rootRemove(T value, BSTree<T>* tree)
 {
     if(nodeVal == value)
     {
@@ -120,6 +122,7 @@ void Node<T>::rootRemove(T value)
         }
         else
         {
+            tree->root = nullptr;
             delete this;
         }
     }
@@ -131,7 +134,7 @@ void Node<T>::rootRemove(T value)
 }
 
 template <typename T>
-void Node<T>::remove(T value, Node<T>*& parent)
+void Node<T>::remove(T value, Node<T>* parent)
 {
     if(nodeVal == value)
     {
@@ -280,6 +283,7 @@ public:
     int size();
     bool isEmpty();
 
+    friend class Node<T>;
 };
 
 template <typename T>
@@ -310,7 +314,7 @@ void BSTree<T>::insert(T value)
 template <typename T>
 void BSTree<T>::remove(T value)
 {
-    if(root) root->rootRemove(value);
+    if(root) root->rootRemove(value, this);
 }
 
 template <typename T>
