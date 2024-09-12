@@ -18,6 +18,7 @@ public:
     void insert(T value);
     void remove(T value);
     bool includes(T value);
+    vector<T> inOrder();
     vector<T> preOrder();
     vector<T> postOrder();
     int size();
@@ -144,6 +145,24 @@ bool Node<T>::includes(T value)
 }
 
 template <typename T>
+vector<T> Node<T>::inOrder()
+{
+    std::vector<T> list = {};
+    if(left)
+    {
+        std::vector<T> returned = left->inOrder();
+        list.insert(std::end(list), std::begin(returned), std::end(returned));
+    }
+    list.push_back(nodeVal);
+    if(right)
+    {
+        std::vector<T> returned = right->inOrder();
+        list.insert(std::end(list), std::begin(returned), std::end(returned));
+    }
+    return list;
+}
+
+template <typename T>
 vector<T> Node<T>::preOrder()
 {
     std::vector<T> list = {nodeVal};
@@ -202,7 +221,7 @@ public:
     void insert(T value);
     void remove(T value);
     bool includes(T value);
-    //vector<T> inOrder();
+    vector<T> inOrder();
     vector<T> preOrder();
     vector<T> postOrder();
     int size();
@@ -249,6 +268,17 @@ bool BSTree<T>::includes(T value)
         return root->includes(value);
     }
     return false;
+}
+
+template <typename T>
+vector<T> BSTree<T>::inOrder()
+{
+    std::vector<T> list = {};
+    if(root)
+    {
+        list = root->inOrder();
+    }
+    return list;
 }
 
 template <typename T>
@@ -302,6 +332,18 @@ TEST(TestBSTree, RemoveTest)
     ASSERT_EQ(tree.includes(1), false);
 }
 
+TEST(TestBSTree, RemoveRootTest)
+{
+    BSTree<int> tree;
+    tree.insert(2);
+    tree.insert(1);
+    tree.insert(3);
+    tree.insert(-1);
+    tree.insert(0);
+    tree.remove(2);
+    ASSERT_EQ(tree.includes(2), false);
+}
+
 TEST(TestBSTree, IncludesTest)
 {
     BSTree<int> tree;
@@ -312,6 +354,18 @@ TEST(TestBSTree, IncludesTest)
     tree.insert(0);
     ASSERT_EQ(tree.includes(3), true);
     ASSERT_EQ(tree.includes(5), false);
+}
+
+TEST(TestBSTree, InOrderTest)
+{
+    BSTree<int> tree;
+    tree.insert(2);
+    tree.insert(1);
+    tree.insert(3);
+    tree.insert(-1);
+    tree.insert(0);
+    std::vector<int> expected = {-1,0,1,2,3};
+    ASSERT_EQ(tree.inOrder(), expected);
 }
 
 TEST(TestBSTree, PreOrderTest)
