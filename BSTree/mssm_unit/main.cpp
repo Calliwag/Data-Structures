@@ -16,7 +16,8 @@ public:
     ~Node();
     T getValue();
     void insert(T value);
-    void remove(T value);
+    void rootRemove(T value);
+    void remove(T value, Node<T>*& parent);
     bool includes(T value);
     vector<T> inOrder();
     vector<T> preOrder();
@@ -83,7 +84,7 @@ T Node<T>::getRightMost()
 }
 
 template <typename T>
-void Node<T>::remove(T value)
+void Node<T>::rootRemove(T value)
 {
     if(nodeVal == value)
     {
@@ -91,7 +92,7 @@ void Node<T>::remove(T value)
         {
             T newValue = left->getRightMost();
             nodeVal = newValue;
-            left->remove(newValue);
+            left->remove(newValue, this);
         }
         else if(left)
         {
@@ -124,8 +125,60 @@ void Node<T>::remove(T value)
     }
     else
     {
-        if(left) left->remove(value);
-        if(right) right->remove(value);
+        if(left) left->remove(value, this);
+        if(right) right->remove(value, this);
+    }
+}
+
+template <typename T>
+void Node<T>::remove(T value, Node<T>*& parent)
+{
+    if(nodeVal == value)
+    {
+        if(left && right)
+        {
+            T newValue = left->getRightMost();
+            nodeVal = newValue;
+            left->remove(newValue, this);
+        }
+        else if(left)
+        {
+            Node<T>* oldLeft = left;
+
+            nodeVal = oldLeft->nodeVal;
+            left = oldLeft->left;
+            right = oldLeft->right;
+
+            oldLeft->right = nullptr;
+            oldLeft->left = nullptr;
+            delete oldLeft;
+        }
+        else if(right)
+        {
+            Node<T>* oldRight = right;
+
+            nodeVal = oldRight->nodeVal;
+            left = oldRight->left;
+            right = oldRight->right;
+
+            oldRight->right = nullptr;
+            oldRight->left = nullptr;
+            delete oldRight;
+        }
+        else
+        {
+            if(parent)
+            {
+                if(parent->left == this) parent->left = nullptr;
+                if(parent->right == this) parent->right = nullptr;
+            }
+            delete this;
+        }
+    }
+    else
+    {
+        if(left) left->remove(value, this);
+        if(right) right->remove(value, this);
     }
 }
 
@@ -257,7 +310,7 @@ void BSTree<T>::insert(T value)
 template <typename T>
 void BSTree<T>::remove(T value)
 {
-    if(root) root->remove(value);
+    if(root) root->rootRemove(value);
 }
 
 template <typename T>
@@ -342,6 +395,22 @@ TEST(TestBSTree, RemoveRootTest)
     tree.insert(0);
     tree.remove(2);
     ASSERT_EQ(tree.includes(2), false);
+    std::vector<int> expected = {1,-1,0,3};
+    ASSERT_EQ(tree.preOrder(), expected);
+}
+
+TEST(TestBSTree, RemoveAllTest)
+{
+    BSTree<int> tree;
+    tree.insert(2);
+    tree.insert(1);
+    tree.insert(3);
+    tree.remove(2);
+    tree.remove(1);
+    tree.remove(3);
+    std::vector<int> expected = {};
+    ASSERT_EQ(tree.preOrder(), expected);
+    ASSERT_TRUE(tree.isEmpty());
 }
 
 TEST(TestBSTree, IncludesTest)
