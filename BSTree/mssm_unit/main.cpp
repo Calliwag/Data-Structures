@@ -11,6 +11,7 @@ private:
     T nodeVal;
     Node<T>* left;
     Node<T>* right;
+    int height;
 
     T getRightMost();
 
@@ -18,14 +19,16 @@ public:
     Node(Node* _left, Node* _right, T _nodeVal);
     ~Node();
     T getValue();
-    void insert(T value);
+    int insert(T value);
     void rootRemove(T value, BSTree<T>* tree);
-    void remove(T value, Node<T>* parent);
+    int remove(T value, Node<T>* parent);
     bool includes(T value);
     vector<T> inOrder();
     vector<T> preOrder();
     vector<T> postOrder();
     int size();
+
+    friend class BSTree<T>;
 };
 
 template <typename T>
@@ -33,7 +36,12 @@ Node<T>::Node(Node<T>* _left, Node<T>* _right, T _nodeVal)
 {
     left = _left;
     right = _right;
-    nodeVal = _nodeVal;
+    nodeVal = _nodeVal;\
+    int lHeight = -1;
+    int rHeight = -1;
+    if(left) lHeight = left->height;
+    if(right) rHeight = right->height;
+    height = max(lHeight,rHeight) + 1;
 }
 
 template <typename T>
@@ -44,30 +52,35 @@ Node<T>::~Node()
 }
 
 template <typename T>
-void Node<T>::insert(T value)
+int Node<T>::insert(T value)
 {
+    int newHeight = height;
     if(value < nodeVal)
     {
         if(left)
         {
-            left->insert(value);
+            newHeight = max(left->insert(value) + 1,height);
         }
         else
         {
             left = new Node<T>(nullptr, nullptr, value);
+            newHeight = 1;
         }
     }
     else if(value > nodeVal)
     {
         if(right)
         {
-            right->insert(value);
+            newHeight = max(right->insert(value) + 1,height);
         }
         else
         {
             right = new Node<T>(nullptr, nullptr, value);
+            newHeight = 1;
         }
     }
+    height = newHeight;
+    return newHeight;
 }
 
 template <typename T>
@@ -107,6 +120,7 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
             oldLeft->right = nullptr;
             oldLeft->left = nullptr;
             delete oldLeft;
+            height--;
         }
         else if(right)
         {
@@ -119,6 +133,7 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
             oldRight->right = nullptr;
             oldRight->left = nullptr;
             delete oldRight;
+            height--;
         }
         else
         {
@@ -134,8 +149,9 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
 }
 
 template <typename T>
-void Node<T>::remove(T value, Node<T>* parent)
+int Node<T>::remove(T value, Node<T>* parent)
 {
+    int newHeight = height;
     if(nodeVal == value)
     {
         if(left && right)
@@ -155,6 +171,7 @@ void Node<T>::remove(T value, Node<T>* parent)
             oldLeft->right = nullptr;
             oldLeft->left = nullptr;
             delete oldLeft;
+            height--;
         }
         else if(right)
         {
@@ -167,13 +184,17 @@ void Node<T>::remove(T value, Node<T>* parent)
             oldRight->right = nullptr;
             oldRight->left = nullptr;
             delete oldRight;
+            height--;
         }
         else
         {
-            if(parent)
+            if(parent->left == this)
             {
-                if(parent->left == this) parent->left = nullptr;
-                if(parent->right == this) parent->right = nullptr;
+                parent->left = nullptr;
+            }
+            if(parent->right == this)
+            {
+                parent->right = nullptr;
             }
             delete this;
         }
@@ -181,8 +202,13 @@ void Node<T>::remove(T value, Node<T>* parent)
     else
     {
         if(left) left->remove(value, this);
-        if(right) right->remove(value, this);
+        if(right) right->remove(value, this);;
     }
+    int lHeight = -1;
+    int rHeight = -1;
+    if(parent->left) lHeight = parent->left->height;
+    if(parent->right) rHeight = parent->right->height;
+    parent->height = max(lHeight + 1,rHeight + 1);
 }
 
 template <typename T>
@@ -282,6 +308,7 @@ public:
     vector<T> postOrder();
     int size();
     bool isEmpty();
+    int getHeight();
 
     friend class Node<T>;
 };
@@ -377,6 +404,24 @@ bool BSTree<T>::isEmpty()
     return size() == 0;
 }
 
+template <typename T>
+int BSTree<T>::getHeight()
+{
+    if(root) return root->height;
+    return -1;
+}
+
+TEST(TestBSTree, HeightTest)
+{
+    BSTree<int> tree;
+    tree.insert(2);
+    tree.insert(1);
+    tree.insert(3);
+    tree.insert(-1);
+    tree.insert(0);
+    ASSERT_EQ(tree.getHeight(), 3);
+}
+
 TEST(TestBSTree, RemoveTest)
 {
     BSTree<int> tree;
@@ -415,6 +460,27 @@ TEST(TestBSTree, RemoveAllTest)
     std::vector<int> expected = {};
     ASSERT_EQ(tree.preOrder(), expected);
     ASSERT_TRUE(tree.isEmpty());
+}
+
+TEST(TestBSTree, RemoveAllHeightTest)
+{
+    BSTree<int> tree;
+    tree.insert(2);
+    tree.insert(1);
+    tree.insert(3);
+    tree.insert(-1);
+    tree.insert(0);
+    ASSERT_EQ(tree.getHeight(), 3);
+    tree.remove(2);
+    ASSERT_EQ(tree.getHeight(), 2);
+    tree.remove(-1);
+    ASSERT_EQ(tree.getHeight(), 1);
+    tree.remove(3);
+    ASSERT_EQ(tree.getHeight(), 1);
+    tree.remove(1);
+    ASSERT_EQ(tree.getHeight(), 0);
+    tree.remove(0);
+    ASSERT_EQ(tree.getHeight(), -1);
 }
 
 TEST(TestBSTree, IncludesTest)
