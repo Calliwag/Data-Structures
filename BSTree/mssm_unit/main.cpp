@@ -13,7 +13,13 @@ private:
     Node<T>* right;
     int height;
 
+    int rHeight();
+    int lHeight();
     T getRightMost();
+    void updateHeight();
+    void balance();
+    void rotateRight();
+    void rotateLeft();
 
 public:
     Node(Node* _left, Node* _right, T _nodeVal);
@@ -21,7 +27,7 @@ public:
     T getValue();
     int insert(T value);
     void rootRemove(T value, BSTree<T>* tree);
-    int remove(T value, Node<T>* parent);
+    void remove(T value, Node<T>* parent);
     bool includes(T value);
     vector<T> inOrder();
     vector<T> preOrder();
@@ -80,6 +86,7 @@ int Node<T>::insert(T value)
         }
     }
     height = newHeight;
+    balance();
     return newHeight;
 }
 
@@ -96,6 +103,98 @@ T Node<T>::getRightMost()
         returns = nodeVal;
     }
     return returns;
+}
+
+template <typename T>
+int Node<T>::lHeight()
+{
+    if(left) return left->height;
+    return -1;
+}
+
+template <typename T>
+int Node<T>::rHeight()
+{
+    if(right) return right->height;
+    return -1;
+}
+
+template <typename T>
+void Node<T>::updateHeight()
+{
+    height = max(lHeight(),rHeight()) + 1;
+}
+
+template <typename T>
+void Node<T>::balance()
+{
+    int balanceFactor = rHeight() - lHeight();
+    if(balanceFactor <= -2)
+    {
+        if(left->rHeight() > left->lHeight()) left->rotateLeft();
+        rotateRight();
+    }
+    else if(balanceFactor >= 2)
+    {
+        if(right->lHeight() > right->rHeight()) right->rotateRight();
+        rotateLeft();
+    }
+}
+
+template <typename T>
+void Node<T>::rotateRight()
+{
+    Node<T>* llNode = nullptr;
+    Node<T>* lrNode = nullptr;
+    Node<T>* rNode = nullptr;
+    if(left->left) llNode = left->left;
+    if(left->right) lrNode = left->right;
+    if(right) rNode = right;
+
+    if(right)
+    {
+        right->nodeVal = nodeVal;
+        right->right = rNode;
+        right->left = lrNode;
+        right->updateHeight();
+    }
+    else
+    {
+        right = new Node<T>(lrNode,rNode,nodeVal);
+        right->updateHeight();
+    }
+
+    nodeVal = left->nodeVal;
+    left = llNode;
+    updateHeight();
+}
+
+template <typename T>
+void Node<T>::rotateLeft()
+{
+    Node<T>* rrNode = nullptr;
+    Node<T>* rlNode = nullptr;
+    Node<T>* lNode = nullptr;
+    if(right->right) rrNode = right->right;
+    if(right->left) rlNode = right->left;
+    if(left) lNode = left;
+
+    if(left)
+    {
+        left->nodeVal = nodeVal;
+        left->left = lNode;
+        left->right = rlNode;
+        left->updateHeight();
+    }
+    else
+    {
+        left = new Node<T>(lNode,rlNode,nodeVal);
+        left->updateHeight();
+    }
+
+    nodeVal = right->nodeVal;
+    right = rrNode;
+    updateHeight();
 }
 
 template <typename T>
@@ -146,10 +245,11 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
         if(left) left->remove(value, this);
         if(right) right->remove(value, this);
     }
+    balance();
 }
 
 template <typename T>
-int Node<T>::remove(T value, Node<T>* parent)
+void Node<T>::remove(T value, Node<T>* parent)
 {
     int newHeight = height;
     if(nodeVal == value)
@@ -209,6 +309,7 @@ int Node<T>::remove(T value, Node<T>* parent)
     if(parent->left) lHeight = parent->left->height;
     if(parent->right) rHeight = parent->right->height;
     parent->height = max(lHeight + 1,rHeight + 1);
+    balance();
 }
 
 template <typename T>
@@ -481,6 +582,18 @@ TEST(TestBSTree, RemoveAllHeightTest)
     ASSERT_EQ(tree.getHeight(), 0);
     tree.remove(0);
     ASSERT_EQ(tree.getHeight(), -1);
+}
+\
+TEST(TestBSTree, BalanceTest)
+{
+    BSTree<int> tree;
+    tree.insert(0);
+    tree.insert(1);
+    tree.insert(2);
+    tree.insert(3);
+    tree.insert(4);
+    vector<int> expected = {1,0,3,2,4};
+    ASSERT_EQ(tree.preOrder(), expected);
 }
 
 TEST(TestBSTree, IncludesTest)
