@@ -149,20 +149,15 @@ void Node<T>::rotateRight()
     Node<T>* rNode = nullptr;
     if(left->left) llNode = left->left;
     if(left->right) lrNode = left->right;
-    if(right) rNode = right;
-
     if(right)
     {
-        right->nodeVal = nodeVal;
-        right->right = rNode;
-        right->left = lrNode;
-        right->updateHeight();
+        rNode = new Node<T>(right->left, right->right, right->nodeVal);
+        right->right = nullptr;
+        right->left = nullptr;
+        delete right;
     }
-    else
-    {
-        right = new Node<T>(lrNode,rNode,nodeVal);
-        right->updateHeight();
-    }
+    right = new Node<T>(lrNode, rNode, nodeVal);
+    right->updateHeight();
 
     nodeVal = left->nodeVal;
     left = llNode;
@@ -177,20 +172,15 @@ void Node<T>::rotateLeft()
     Node<T>* lNode = nullptr;
     if(right->right) rrNode = right->right;
     if(right->left) rlNode = right->left;
-    if(left) lNode = left;
-
     if(left)
     {
-        left->nodeVal = nodeVal;
-        left->left = lNode;
-        left->right = rlNode;
-        left->updateHeight();
+        lNode = new Node<T>(left->left, left->right, left->nodeVal);
+        left->left = nullptr;
+        left->right = nullptr;
+        delete left;
     }
-    else
-    {
-        left = new Node<T>(lNode,rlNode,nodeVal);
-        left->updateHeight();
-    }
+    left = new Node<T>(lNode, rlNode, nodeVal);
+    left->updateHeight();
 
     nodeVal = right->nodeVal;
     right = rrNode;
@@ -246,11 +236,7 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
         if(left) left->remove(value, this);
         if(right) right->remove(value, this);
     }
-    int lHeight = -1;
-    int rHeight = -1;
-    if(left) lHeight = left->height;
-    if(right) rHeight = right->height;
-    height = max(lHeight + 1,rHeight + 1);
+    updateHeight();
     balance();
 }
 
@@ -311,11 +297,7 @@ void Node<T>::remove(T value, Node<T>* parent)
         if(left) left->remove(value, this);
         if(right) right->remove(value, this);;
     }
-    int lHeight = -1;
-    int rHeight = -1;
-    if(left) lHeight = left->height;
-    if(right) rHeight = right->height;
-    height = max(lHeight + 1,rHeight + 1);
+    updateHeight();
     balance();
 }
 
