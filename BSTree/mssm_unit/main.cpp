@@ -1,6 +1,9 @@
 #include "mssm.h"
 #include "gtest/gtest.h"
 
+int nodeNum = 0;
+int rotNum = 0;
+
 template <typename T>
 class BSTree;
 
@@ -40,9 +43,10 @@ public:
 template <typename T>
 Node<T>::Node(Node<T>* _left, Node<T>* _right, T _nodeVal)
 {
+    nodeNum ++;
     left = _left;
     right = _right;
-    nodeVal = _nodeVal;\
+    nodeVal = _nodeVal;
     int lHeight = -1;
     int rHeight = -1;
     if(left) lHeight = left->height;
@@ -53,6 +57,7 @@ Node<T>::Node(Node<T>* _left, Node<T>* _right, T _nodeVal)
 template <typename T>
 Node<T>::~Node()
 {
+    nodeNum --;
     delete left;
     delete right;
 }
@@ -144,11 +149,10 @@ void Node<T>::balance()
 template <typename T>
 void Node<T>::rotateRight()
 {
-    Node<T>* llNode = nullptr;
-    Node<T>* lrNode = nullptr;
+    rotNum ++;
+    Node<T>* llNode = left->left;
+    Node<T>* lrNode = left->right;
     Node<T>* rNode = nullptr;
-    if(left->left) llNode = left->left;
-    if(left->right) lrNode = left->right;
     if(right)
     {
         rNode = new Node<T>(right->left, right->right, right->nodeVal);
@@ -159,6 +163,10 @@ void Node<T>::rotateRight()
     right = new Node<T>(lrNode, rNode, nodeVal);
     right->updateHeight();
 
+    left->left = nullptr;
+    left->right = nullptr;
+    delete left;
+
     nodeVal = left->nodeVal;
     left = llNode;
     updateHeight();
@@ -167,11 +175,10 @@ void Node<T>::rotateRight()
 template <typename T>
 void Node<T>::rotateLeft()
 {
-    Node<T>* rrNode = nullptr;
-    Node<T>* rlNode = nullptr;
+    rotNum ++;
+    Node<T>* rrNode = right->right;
+    Node<T>* rlNode = right->left;
     Node<T>* lNode = nullptr;
-    if(right->right) rrNode = right->right;
-    if(right->left) rlNode = right->left;
     if(left)
     {
         lNode = new Node<T>(left->left, left->right, left->nodeVal);
@@ -181,6 +188,10 @@ void Node<T>::rotateLeft()
     }
     left = new Node<T>(lNode, rlNode, nodeVal);
     left->updateHeight();
+
+    right->left = nullptr;
+    right->right = nullptr;
+    delete right;
 
     nodeVal = right->nodeVal;
     right = rrNode;
@@ -703,6 +714,8 @@ int main()
 {
     ::testing::InitGoogleTest();
     int res = RUN_ALL_TESTS();;
+
+    cout << nodeNum << endl << rotNum << endl;
 
     return res;
 }
