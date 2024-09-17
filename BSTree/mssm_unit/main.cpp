@@ -545,7 +545,7 @@ TEST(TestBSTree, RemoveRootTest)
     tree.insert(0);
     tree.remove(2);
     ASSERT_EQ(tree.includes(2), false);
-    std::vector<int> expected = {1,-1,0,3};
+    std::vector<int> expected = {1,0,-1,3};
     ASSERT_EQ(tree.preOrder(), expected);
 }
 
@@ -583,7 +583,7 @@ TEST(TestBSTree, RemoveAllHeightTest)
     tree.remove(0);
     ASSERT_EQ(tree.getHeight(), -1);
 }
-\
+
 TEST(TestBSTree, BalanceTest)
 {
     BSTree<int> tree;
@@ -593,6 +593,24 @@ TEST(TestBSTree, BalanceTest)
     tree.insert(3);
     tree.insert(4);
     vector<int> expected = {1,0,3,2,4};
+    ASSERT_EQ(tree.preOrder(), expected);
+}
+
+TEST(TestBSTree, RemoveBalanceTest)
+{
+    BSTree<int> tree;
+    tree.insert(0);
+    tree.insert(1);
+    tree.insert(2);
+    tree.insert(3);
+    tree.insert(4);
+
+    tree.remove(3);
+    tree.remove(4);
+    tree.remove(1);
+    tree.remove(2);
+    tree.remove(0);
+    vector<int> expected = {};
     ASSERT_EQ(tree.preOrder(), expected);
 }
 
@@ -628,7 +646,7 @@ TEST(TestBSTree, PreOrderTest)
     tree.insert(3);
     tree.insert(-1);
     tree.insert(0);
-    std::vector<int> expected = {2,1, -1, 0,3};
+    std::vector<int> expected = {2,0,-1,1,3};
     ASSERT_EQ(tree.preOrder(), expected);
 }
 
@@ -640,7 +658,7 @@ TEST(TestBSTree, PostOrderTest)
     tree.insert(3);
     tree.insert(-1);
     tree.insert(0);
-    std::vector<int> expected = {0,-1, 1, 3,2};
+    std::vector<int> expected = {-1,1,0,3,2};
     ASSERT_EQ(tree.postOrder(), expected);
 }
 
