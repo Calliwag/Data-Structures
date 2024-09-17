@@ -238,6 +238,7 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
         {
             tree->root = nullptr;
             delete this;
+            return;
         }
     }
     else
@@ -245,6 +246,11 @@ void Node<T>::rootRemove(T value, BSTree<T>* tree)
         if(left) left->remove(value, this);
         if(right) right->remove(value, this);
     }
+    int lHeight = -1;
+    int rHeight = -1;
+    if(left) lHeight = left->height;
+    if(right) rHeight = right->height;
+    height = max(lHeight + 1,rHeight + 1);
     balance();
 }
 
@@ -297,6 +303,7 @@ void Node<T>::remove(T value, Node<T>* parent)
                 parent->right = nullptr;
             }
             delete this;
+            return;
         }
     }
     else
@@ -306,9 +313,9 @@ void Node<T>::remove(T value, Node<T>* parent)
     }
     int lHeight = -1;
     int rHeight = -1;
-    if(parent->left) lHeight = parent->left->height;
-    if(parent->right) rHeight = parent->right->height;
-    parent->height = max(lHeight + 1,rHeight + 1);
+    if(left) lHeight = left->height;
+    if(right) rHeight = right->height;
+    height = max(lHeight + 1,rHeight + 1);
     balance();
 }
 
